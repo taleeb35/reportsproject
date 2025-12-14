@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -46,9 +46,8 @@ const Reports = () => {
   const [filterType, setFilterType] = useState<string>("all");
   const [sortOrder, setSortOrder] = useState<string>("latest"); // Default is "latest"
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const pageSize = 18;
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 18;
 
   useEffect(() => {
     fetchData();
@@ -100,13 +99,9 @@ const Reports = () => {
     setCurrentPage(1);
   };
 
-  const isYouTubeUrl = (url: string) => {
-    return url.includes("youtube.com") || url.includes("youtu.be");
+  const handleVideoClick = (videoUrl: string) => {
+    setSelectedVideo(videoUrl);
   };
-
-  const handleVideoClick = (youtubeUrl: string) => {
-    setSelectedVideo(youtubeUrl);
-  };
 
   const handleCloseVideo = () => {
     setSelectedVideo(null);
@@ -333,16 +328,20 @@ const Reports = () => {
 
       {/* Video Modal */}
       <Dialog open={!!selectedVideo} onOpenChange={(open) => !open && handleCloseVideo()}>
-        <DialogContent className="max-w-4xl w-full p-0 bg-black">
+        <DialogContent className="max-w-4xl w-full p-0 bg-black full_pop_video">
           <DialogTitle className="sr-only">Video Player</DialogTitle>
-          <div className="relative w-full aspect-video">
+          <div className="w-full aspect-video">
             {selectedVideo && (
               <video
+                key={selectedVideo}
                 src={selectedVideo}
                 className="w-full h-full object-contain"
                 controls
                 autoPlay
-              />
+                playsInline
+              >
+                Your browser does not support the video tag.
+              </video>
             )}
           </div>
         </DialogContent>
