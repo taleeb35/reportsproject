@@ -278,6 +278,10 @@ img.whatsapp_icon {
     padding: 5px;
 }
 
+.w-full.aspect-video.new_dim {
+    aspect-ratio: inherit !important;
+}
+
 @media only screen and (max-width: 767px) {
 			.leading-tight {
 		    font-size: 26px !important;
