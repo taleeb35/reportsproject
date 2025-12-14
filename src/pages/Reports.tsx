@@ -330,7 +330,7 @@ const Reports = () => {
       <Dialog open={!!selectedVideo} onOpenChange={(open) => !open && handleCloseVideo()}>
         <DialogContent className="max-w-4xl w-full p-0 bg-black full_pop_video">
           <DialogTitle className="sr-only">Video Player</DialogTitle>
-          <div className="w-full aspect-video">
+          <div className="w-full aspect-video new_dim">
             {selectedVideo && (
               <video
                 key={selectedVideo}
