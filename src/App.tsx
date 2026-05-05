@@ -16,6 +16,7 @@ import AdminForgotPassword from "./pages/AdminForgotPassword";
 import AdminResetPassword from "./pages/AdminResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ViewReport from "./pages/ViewReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
