@@ -1,12 +1,16 @@
-import { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const ViewReport = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [title, setTitle] = useState<string>("Report");
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAndRedirect = async () => {
+    const fetchReport = async () => {
       if (!id) return;
 
       const { data } = await supabase
@@ -16,11 +20,10 @@ const ViewReport = () => {
         .single();
 
       if (!data) {
-        window.location.href = "/reports";
+        navigate("/reports", { replace: true });
         return;
       }
 
-      // Get lang from query params
       const params = new URLSearchParams(window.location.search);
       const lang = params.get("lang") || "en";
 
@@ -30,18 +33,33 @@ const ViewReport = () => {
           : data.english_pdf_url || data.english_flipbook_url;
 
       if (url) {
-        window.location.href = url;
+        setTitle(data.title || "Report");
+        setPdfUrl(url);
       } else {
-        window.location.href = "/reports";
+        navigate("/reports", { replace: true });
       }
+      setLoading(false);
     };
 
-    fetchAndRedirect();
-  }, [id]);
+    fetchReport();
+  }, [id, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg">Loading report...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-lg">Loading report...</p>
+    <div className="min-h-screen flex flex-col">
+      <iframe
+        src={pdfUrl || ""}
+        title={title}
+        className="w-full flex-1 border-0"
+        style={{ minHeight: "100vh" }}
+      />
     </div>
   );
 };
