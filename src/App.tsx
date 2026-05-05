@@ -16,6 +16,7 @@ import AdminForgotPassword from "./pages/AdminForgotPassword";
 import AdminResetPassword from "./pages/AdminResetPassword";
 import AdminDashboard from "./pages/AdminDashboard";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ViewReport from "./pages/ViewReport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -39,6 +40,8 @@ const App = () => (
           <Route path="/admin/reset-password" element={<AdminResetPassword />} />
           <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/view/:id" element={<ViewReport />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
