@@ -187,8 +187,10 @@ const Reports = () => {
                 {paginatedItems.map((item) => {
                 const isYouTube = item.content_type === "youtube";
                 const aspectClass = isYouTube ? "aspect-video" : "aspect-[3/4]";
-                const enUrl = item.english_pdf_url || item.english_flipbook_url || null;
-                const arUrl = item.arabic_pdf_url || item.arabic_flipbook_url || null;
+                const hasEn = item.english_pdf_url || item.english_flipbook_url;
+                const hasAr = item.arabic_pdf_url || item.arabic_flipbook_url;
+                const enUrl = hasEn ? `/view/${item.id}?lang=en` : null;
+                const arUrl = hasAr ? `/view/${item.id}?lang=ar` : null;
                 
                 return (
                   <div key={item.id} className="flex flex-col">
