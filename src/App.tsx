@@ -40,6 +40,8 @@ const App = () => (
           <Route path="/admin/reset-password" element={<AdminResetPassword />} />
           <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/view/:id" element={<ViewReport />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
