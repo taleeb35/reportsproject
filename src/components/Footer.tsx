@@ -92,7 +92,7 @@ const Footer = () => {
               </li>
               <li>
                 <a href="/statistics" className="font-bold text-gray-900 hover:text-[hsl(var(--accent))]">
-                  Static’s
+                  Stats
                 </a>
               </li>
               <li>
