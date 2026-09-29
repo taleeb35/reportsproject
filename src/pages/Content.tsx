@@ -255,9 +255,8 @@ const Content = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="pdf">PDF</SelectItem>
-              <SelectItem value="flipbook">Flipbook</SelectItem>
-              <SelectItem value="youtube">YouTube</SelectItem>
+              <SelectItem value="flipbook">Interactive Report</SelectItem>
+              <SelectItem value="youtube">Video Report</SelectItem>
             </SelectContent>
           </Select>
 
