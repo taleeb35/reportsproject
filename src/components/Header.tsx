@@ -48,7 +48,7 @@ const Header = () => {
                 href="/statistics"
                 className="text-gray-800 hover:text-[hsl(var(--accent))] transition-colors font-medium"
               >
-                Statics
+                Stats
               </a>
               <a href="/about" className="text-gray-800 hover:text-[hsl(var(--accent))] transition-colors font-medium">
                 About us
