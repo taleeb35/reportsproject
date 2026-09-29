@@ -24,7 +24,7 @@ const ContentForm = ({ item, onClose }: ContentFormProps) => {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingFileName, setUploadingFileName] = useState("");
-  const [contentType, setContentType] = useState<"pdf" | "flipbook" | "youtube">(item?.content_type || "pdf");
+  const [contentType, setContentType] = useState<"pdf" | "flipbook" | "youtube">(item?.content_type || "flipbook");
   const [title, setTitle] = useState(item?.title || "");
   const [year, setYear] = useState<string>((item?.year?.toString()) || new Date().getFullYear().toString());
   
@@ -32,11 +32,9 @@ const ContentForm = ({ item, onClose }: ContentFormProps) => {
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
   const [coverImageUrl, setCoverImageUrl] = useState(item?.cover_image_url || "");
   
-  // PDF fields
-  const [englishPdfFile, setEnglishPdfFile] = useState<File | null>(null);
-  const [arabicPdfFile, setArabicPdfFile] = useState<File | null>(null);
-  const [englishPdfUrl, setEnglishPdfUrl] = useState(item?.english_pdf_url || "");
-  const [arabicPdfUrl, setArabicPdfUrl] = useState(item?.arabic_pdf_url || "");
+  // PDF fields (legacy - only preserved when editing existing PDF records)
+  const [englishPdfUrl] = useState(item?.english_pdf_url || "");
+  const [arabicPdfUrl] = useState(item?.arabic_pdf_url || "");
   
   // Flipbook fields
   const [englishFlipbookUrl, setEnglishFlipbookUrl] = useState(item?.english_flipbook_url || "");
@@ -162,17 +160,9 @@ const ContentForm = ({ item, onClose }: ContentFormProps) => {
 
       // Handle file uploads and URLs based on content type
       if (contentType === "pdf") {
-        if (englishPdfFile) {
-          const url = await uploadFile(englishPdfFile, `pdfs/${Date.now()}_en_${englishPdfFile.name}`);
-          dataToSave.english_pdf_url = url;
-        } else if (item) {
+        // Legacy: preserve existing PDF URLs when editing old records
+        if (item) {
           dataToSave.english_pdf_url = englishPdfUrl;
-        }
-
-        if (arabicPdfFile) {
-          const url = await uploadFile(arabicPdfFile, `pdfs/${Date.now()}_ar_${arabicPdfFile.name}`);
-          dataToSave.arabic_pdf_url = url;
-        } else if (item) {
           dataToSave.arabic_pdf_url = arabicPdfUrl;
         }
       } else if (contentType === "flipbook") {
@@ -236,7 +226,6 @@ const ContentForm = ({ item, onClose }: ContentFormProps) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pdf">{CONTENT_TYPE_LABELS.PDF}</SelectItem>
                 <SelectItem value="flipbook">{CONTENT_TYPE_LABELS.Flipbook}</SelectItem>
                 <SelectItem value="youtube">{CONTENT_TYPE_LABELS.YouTube}</SelectItem>
               </SelectContent>
@@ -283,44 +272,19 @@ const ContentForm = ({ item, onClose }: ContentFormProps) => {
           </div>
 
           {contentType === "pdf" && (
-            <>
-              <div>
-                <Label htmlFor="englishPdf">English PDF File</Label>
-                <Input
-                  id="englishPdf"
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => setEnglishPdfFile(e.target.files?.[0] || null)}
-                />
-                {englishPdfUrl && !englishPdfFile && (
-                  <div className="mt-2">
-                    <p className="text-sm text-muted-foreground">Current file: 
-                      <a href={englishPdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
-                        View English PDF
-                      </a>
-                    </p>
-                  </div>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="arabicPdf">Arabic PDF File</Label>
-                <Input
-                  id="arabicPdf"
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => setArabicPdfFile(e.target.files?.[0] || null)}
-                />
-                {arabicPdfUrl && !arabicPdfFile && (
-                  <div className="mt-2">
-                    <p className="text-sm text-muted-foreground">Current file: 
-                      <a href={arabicPdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
-                        View Arabic PDF
-                      </a>
-                    </p>
-                  </div>
-                )}
-              </div>
-            </>
+            <div className="rounded border border-dashed p-3 text-sm text-muted-foreground">
+              This is a legacy PDF report. Existing files are preserved:
+              {englishPdfUrl && (
+                <a href={englishPdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+                  View English PDF
+                </a>
+              )}
+              {arabicPdfUrl && (
+                <a href={arabicPdfUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline ml-1">
+                  View Arabic PDF
+                </a>
+              )}
+            </div>
           )}
 
           {contentType === "flipbook" && (
