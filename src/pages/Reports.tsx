@@ -144,12 +144,11 @@ const Reports = () => {
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="pdf">{CONTENT_TYPE_LABELS.PDF}</SelectItem>
-                  <SelectItem value="flipbook">{CONTENT_TYPE_LABELS.Flipbook}</SelectItem>
-                  <SelectItem value="youtube">{CONTENT_TYPE_LABELS.YouTube}</SelectItem>
-                </SelectContent>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="flipbook">{CONTENT_TYPE_LABELS.Flipbook}</SelectItem>
+                  <SelectItem value="youtube">{CONTENT_TYPE_LABELS.YouTube}</SelectItem>
+                </SelectContent>
               </Select>
             </div>
 

@@ -24,7 +24,7 @@ const ContentForm = ({ item, onClose }: ContentFormProps) => {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadingFileName, setUploadingFileName] = useState("");
-  const [contentType, setContentType] = useState<"pdf" | "flipbook" | "youtube">(item?.content_type || "pdf");
+  const [contentType, setContentType] = useState<"pdf" | "flipbook" | "youtube">(item?.content_type || "flipbook");
   const [title, setTitle] = useState(item?.title || "");
   const [year, setYear] = useState<string>((item?.year?.toString()) || new Date().getFullYear().toString());
   
@@ -236,7 +236,6 @@ const ContentForm = ({ item, onClose }: ContentFormProps) => {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pdf">{CONTENT_TYPE_LABELS.PDF}</SelectItem>
                 <SelectItem value="flipbook">{CONTENT_TYPE_LABELS.Flipbook}</SelectItem>
                 <SelectItem value="youtube">{CONTENT_TYPE_LABELS.YouTube}</SelectItem>
               </SelectContent>
