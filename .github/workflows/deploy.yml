@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -13,19 +14,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload files to server
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Build on GitHub instead of on the 1-core VPS
+      - name: Install & build
+        run: |
+          npm ci
+          npm run build
+          tar -czf site.tar.gz dist
+
+      # Upload only the archive; never wipe the live folder (that is what was failing)
+      - name: Upload build to server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
-          source: "."
-          target: "/home/theannualreports/htdocs/theannualreports.com"
+          source: "site.tar.gz"
+          target: "/home/theannualreports/deploy-tmp"
           overwrite: true
-          rm: true
 
-      - name: Deploy via SSH
+      - name: Activate release
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -34,45 +48,34 @@ jobs:
           port: 22
           script: |
             set -e
+            APP=/home/theannualreports/htdocs/theannualreports.com
+            REL=/home/theannualreports/releases/$(date +%Y%m%d%H%M%S)
 
-            echo "cd to project"
-            cd /home/theannualreports/htdocs/theannualreports.com
+            mkdir -p "$REL"
+            tar -xzf /home/theannualreports/deploy-tmp/site.tar.gz -C "$REL"
+            rm -f /home/theannualreports/deploy-tmp/site.tar.gz
 
-            echo "Load NVM / Node"
+            # Swap the live build atomically
+            mkdir -p "$APP"
+            ln -sfn "$REL/dist" "$APP/current.new" && mv -Tf "$APP/current.new" "$APP/current"
+
+            # Keep last 5 releases
+            ls -1dt /home/theannualreports/releases/* | tail -n +6 | xargs -r rm -rf
+
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             nvm use 22 >/dev/null 2>&1 || nvm install 22
+            command -v serve >/dev/null 2>&1 || npm i -g serve@14
 
-            echo "Install deps & build (with devDependencies)"
-            unset NODE_ENV
-            if [ -f package-lock.json ]; then
-              npm ci
-            else
-              npm install
-            fi
-            npm run build
+            # Static SPA server on :3000 (CloudPanel's nginx proxies the domain to it)
+            pm2 delete theannualreports >/dev/null 2>&1 || true
+            pm2 start "$(command -v serve)" --name theannualreports -- -s "$APP/current" -l 3000
+            pm2 save
 
-            echo "Start or reload PM2 from ecosystem.config.cjs"
-            export NODE_ENV=production
-            export PORT=3000
-
-            if pm2 describe theannualreports > /dev/null 2>&1; then
-              pm2 reload theannualreports --update-env
-            else
-              pm2 start ecosystem.config.cjs
-              pm2 save
-            fi
-
-            echo "Health probe"
-            for i in {1..40}; do
-              if curl -fsS http://127.0.0.1:3000/ > /dev/null; then
-                echo "Health OK"
-                exit 0
-              fi
-              echo "Waiting for app (try $i/40)..."
+            for i in $(seq 1 20); do
+              if curl -fsS http://127.0.0.1:3000/reports > /dev/null; then echo "Health OK"; exit 0; fi
               sleep 2
             done
-
             echo "Health check FAILED"
-            pm2 logs theannualreports --lines 100 --nostream || true
+            pm2 logs theannualreports --lines 50 --nostream || true
             exit 1
