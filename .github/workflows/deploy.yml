@@ -71,7 +71,10 @@ jobs:
             pm2 delete theannualreports >/dev/null 2>&1 || true
             pm2 flush >/dev/null 2>&1 || true
             # Free :3000 from any leftover process (old vite preview) owned by this user
-            fuser -k 3000/tcp >/dev/null 2>&1 || pkill -u "$(id -u)" -f "vite preview" || true
+            for pid in $(ss -ltnpH 'sport = :3000' 2>/dev/null | grep -o 'pid=[0-9]*' | cut -d= -f2 | sort -u); do
+              echo "stopping old process $pid on :3000"; kill "$pid" 2>/dev/null || true
+            done
+            pkill -u "$(id -u)" -f "[v]ite(\.js)? preview" 2>/dev/null || true
             sleep 2
             echo "--- listeners on :3000 before start"; (ss -ltnp 2>/dev/null | grep ':3000 ') || echo "none"
 
