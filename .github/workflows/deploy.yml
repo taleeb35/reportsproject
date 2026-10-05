@@ -69,7 +69,13 @@ jobs:
 
             # Static SPA server on :3000 (CloudPanel's nginx proxies the domain to it)
             pm2 delete theannualreports >/dev/null 2>&1 || true
-            pm2 start "$(command -v serve)" --name theannualreports -- -s "$APP/current" -l 3000
+            pm2 flush >/dev/null 2>&1 || true
+            # Free :3000 from any leftover process (old vite preview) owned by this user
+            fuser -k 3000/tcp >/dev/null 2>&1 || pkill -u "$(id -u)" -f "vite preview" || true
+            sleep 2
+            echo "--- listeners on :3000 before start"; (ss -ltnp 2>/dev/null | grep ':3000 ') || echo "none"
+
+            pm2 start "$(command -v serve)" --name theannualreports -- -s "$APP/current" -l tcp://0.0.0.0:3000 --no-port-switching --no-clipboard
             pm2 save
 
             for i in $(seq 1 20); do
@@ -77,5 +83,8 @@ jobs:
               sleep 2
             done
             echo "Health check FAILED"
-            pm2 logs theannualreports --lines 50 --nostream || true
+            echo "--- whoami: $(whoami)"; ss -ltnp 2>/dev/null | grep ':3000 ' || true
+            ps -eo user,pid,args | grep -E "vite|serve|node" | grep -v grep || true
+            pm2 ls || true
+            pm2 logs theannualreports --lines 30 --nostream || true
             exit 1
