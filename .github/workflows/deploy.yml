@@ -70,7 +70,7 @@ jobs:
             # Static SPA server on :3000 (CloudPanel's nginx proxies the domain to it)
             pm2 delete theannualreports >/dev/null 2>&1 || true
             pm2 flush >/dev/null 2>&1 || true
-            # Free :3000 from any leftover process (old vite preview) owned by this user
+            # Free :3000 from any leftover process owned by this user
             for pid in $(ss -ltnpH 'sport = :3000' 2>/dev/null | grep -o 'pid=[0-9]*' | cut -d= -f2 | sort -u); do
               echo "stopping old process $pid on :3000"; kill "$pid" 2>/dev/null || true
             done
