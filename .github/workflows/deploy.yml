@@ -25,7 +25,8 @@ jobs:
         run: |
           npm ci
           npm run build
-          tar -czf site.tar.gz dist
+          npx esbuild server/server.mjs --bundle --platform=node --format=cjs --target=node22 --outfile=server.cjs
+          tar -czf site.tar.gz dist server.cjs
 
       # Upload only the archive; never wipe the live folder (that is what was failing)
       - name: Upload build to server
@@ -55,9 +56,9 @@ jobs:
             tar -xzf /home/theannualreports/deploy-tmp/site.tar.gz -C "$REL"
             rm -f /home/theannualreports/deploy-tmp/site.tar.gz
 
-            # Swap the live build atomically
-            mkdir -p "$APP"
-            ln -sfn "$REL/dist" "$APP/current.new" && mv -Tf "$APP/current.new" "$APP/current"
+            # Swap the live release atomically (current -> release dir with dist/ + server.cjs)
+            mkdir -p "$APP" /home/theannualreports/data /home/theannualreports/storage
+            ln -sfn "$REL" "$APP/current.new" && mv -Tf "$APP/current.new" "$APP/current"
 
             # Keep last 5 releases
             ls -1dt /home/theannualreports/releases/* | tail -n +6 | xargs -r rm -rf
@@ -65,9 +66,8 @@ jobs:
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
             nvm use 22 >/dev/null 2>&1 || nvm install 22
-            command -v serve >/dev/null 2>&1 || npm i -g serve@14
 
-            # Static SPA server on :3000 (CloudPanel's nginx proxies the domain to it)
+            # App server on :3000: site + API + file storage (CloudPanel's nginx proxies the domain to it)
             pm2 delete theannualreports >/dev/null 2>&1 || true
             pm2 flush >/dev/null 2>&1 || true
             # Free :3000 from any leftover process owned by this user
@@ -78,7 +78,7 @@ jobs:
             sleep 2
             echo "--- listeners on :3000 before start"; (ss -ltnp 2>/dev/null | grep ':3000 ') || echo "none"
 
-            pm2 start "$(command -v serve)" --name theannualreports -- -s "$APP/current" -l tcp://0.0.0.0:3000 --no-port-switching --no-clipboard
+            PORT=3000 DIST_DIR="$APP/current/dist" pm2 start "$REL/server.cjs" --name theannualreports --update-env
             pm2 save
 
             for i in $(seq 1 20); do
